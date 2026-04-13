@@ -12,13 +12,13 @@ set -euo pipefail
 # ── Config ───────────────────────────────────────────────────────────────
 RUNPOD_API_KEY="${RUNPOD_API_KEY:?Set RUNPOD_API_KEY}"
 POLL_INTERVAL="${POLL_INTERVAL:-60}"          # seconds between attempts
-POD_NAME="${POD_NAME:-gr00t-dev}"
-TEMPLATE_ID="${TEMPLATE_ID:-}"                # optional: your template ID
+POD_NAME="${POD_NAME:-launched-$(date '+%a-%b-%d--%I-%M-%p' | tr '[:upper:]' '[:lower:]')}"
+TEMPLATE_ID="${TEMPLATE_ID:-}"                # runpod-torch-v240 — grab ID from console
 VOLUME_ID="${VOLUME_ID:-}"                    # optional: network volume ID
 CONTAINER_DISK="${CONTAINER_DISK:-50}"        # GB
-VOLUME_DISK="${VOLUME_DISK:-100}"             # GB (only if no network volume)
+VOLUME_DISK="${VOLUME_DISK:-256}"             # GB (only if no network volume)
 CLOUD_TYPE="${CLOUD_TYPE:-ALL}"               # ALL, COMMUNITY, SECURE
-IMAGE="${IMAGE:-runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04}"
+IMAGE="${IMAGE:-runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404}"
 
 # GPU types to try, in priority order
 GPU_TYPES=("NVIDIA L40S" "NVIDIA RTX 6000 Ada Generation")
@@ -77,9 +77,9 @@ EOF
             echo " Body:   ${resp_body}"
             echo "========================================="
 
-            # Optional: send a notification (uncomment one)
-            curl -s -d "RunPod ${gpu} grabbed! Pod: ${pod_id}" ntfy.sh/tellme-whatsup
-            osascript -e "display notification \"${gpu} grabbed!\" with title \"RunPod\""
+            # Optional: send a notification (uncomment as needed)
+            # curl -s -d "RunPod ${gpu} grabbed! Pod: ${pod_id}" ntfy.sh/YOUR_TOPIC
+            # osascript -e 'display notification "'"RunPod ${gpu} grabbed!"'" with title "RunPod"'
 
             exit 0
         else
