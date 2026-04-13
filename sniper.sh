@@ -10,7 +10,13 @@
 set -euo pipefail
 
 # ── Config ───────────────────────────────────────────────────────────────
-RUNPOD_API_KEY="${RUNPOD_API_KEY:?Set RUNPOD_API_KEY}"
+if [[ -z "${RUNPOD_API_KEY:-}" ]]; then
+    echo "Error: RUNPOD_API_KEY is not set." >&2
+    echo "Export your RunPod API key before running, e.g.:" >&2
+    echo "    export RUNPOD_API_KEY=\"rpa_...\"" >&2
+    echo "Get a key at https://www.runpod.io/console/user/settings" >&2
+    exit 1
+fi
 POLL_INTERVAL="${POLL_INTERVAL:-60}"          # seconds between attempts
 POD_NAME="${POD_NAME:-launched-$(date '+%a-%b-%d--%I-%M-%p' | tr '[:upper:]' '[:lower:]')}"
 TEMPLATE_ID="${TEMPLATE_ID:-}"                # runpod-torch-v240 — grab ID from console
