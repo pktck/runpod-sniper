@@ -17,11 +17,18 @@ TEMPLATE_ID="${TEMPLATE_ID:-}"                # runpod-torch-v240 — grab ID fr
 VOLUME_ID="${VOLUME_ID:-}"                    # optional: network volume ID
 CONTAINER_DISK="${CONTAINER_DISK:-50}"        # GB
 VOLUME_DISK="${VOLUME_DISK:-256}"             # GB (only if no network volume)
-CLOUD_TYPE="${CLOUD_TYPE:-ALL}"               # ALL, COMMUNITY, SECURE
+CLOUD_TYPE="${CLOUD_TYPE:-SECURE}"            # ALL, COMMUNITY, SECURE
 IMAGE="${IMAGE:-runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404}"
 
 # GPU types to try, in priority order
 GPU_TYPES=("NVIDIA L40S" "NVIDIA RTX 6000 Ada Generation")
+
+# The API only accepts SECURE or COMMUNITY; expand ALL into both.
+if [[ "$CLOUD_TYPE" == "ALL" ]]; then
+    CLOUD_TYPES=("SECURE" "COMMUNITY")
+else
+    CLOUD_TYPES=("$CLOUD_TYPE")
+fi
 # ─────────────────────────────────────────────────────────────────────────
 
 API="https://rest.runpod.io/v1/pods"
@@ -31,60 +38,95 @@ while true; do
     attempt=$((attempt + 1))
 
     for gpu in "${GPU_TYPES[@]}"; do
-        echo "[$(date '+%H:%M:%S')] Attempt #${attempt} — trying ${gpu}..."
+        for cloud in "${CLOUD_TYPES[@]}"; do
+            echo "[$(date '+%H:%M:%S')] Attempt #${attempt} — trying ${gpu} (${cloud})..."
 
-        # Build the request body
-        body=$(cat <<EOF
+            # Build the request body
+            if [[ -n "$TEMPLATE_ID" && -n "$VOLUME_ID" ]]; then
+                body=$(cat <<EOF
 {
   "name": "${POD_NAME}",
   "imageName": "${IMAGE}",
-  "gpuTypeId": "${gpu}",
+  "gpuTypeIds": ["${gpu}"],
   "gpuCount": 1,
   "containerDiskInGb": ${CONTAINER_DISK},
-  "cloudType": "${CLOUD_TYPE}"
+  "cloudType": "${cloud}",
+  "templateId": "${TEMPLATE_ID}",
+  "networkVolumeId": "${VOLUME_ID}"
+}
 EOF
 )
-        # Add optional fields
-        if [[ -n "$TEMPLATE_ID" ]]; then
-            body=$(echo "$body" | sed '$ s/$/,/')
-            body+=$'\n  "templateId": "'"${TEMPLATE_ID}"'"'
-        fi
-        if [[ -n "$VOLUME_ID" ]]; then
-            body=$(echo "$body" | sed '$ s/$/,/')
-            body+=$'\n  "networkVolumeId": "'"${VOLUME_ID}"'"'
-        else
-            body=$(echo "$body" | sed '$ s/$/,/')
-            body+=$'\n  "volumeInGb": '"${VOLUME_DISK}"
-        fi
-        body+=$'\n}'
+            elif [[ -n "$TEMPLATE_ID" ]]; then
+                body=$(cat <<EOF
+{
+  "name": "${POD_NAME}",
+  "imageName": "${IMAGE}",
+  "gpuTypeIds": ["${gpu}"],
+  "gpuCount": 1,
+  "containerDiskInGb": ${CONTAINER_DISK},
+  "volumeInGb": ${VOLUME_DISK},
+  "cloudType": "${cloud}",
+  "templateId": "${TEMPLATE_ID}"
+}
+EOF
+)
+            elif [[ -n "$VOLUME_ID" ]]; then
+                body=$(cat <<EOF
+{
+  "name": "${POD_NAME}",
+  "imageName": "${IMAGE}",
+  "gpuTypeIds": ["${gpu}"],
+  "gpuCount": 1,
+  "containerDiskInGb": ${CONTAINER_DISK},
+  "cloudType": "${cloud}",
+  "networkVolumeId": "${VOLUME_ID}"
+}
+EOF
+)
+            else
+                body=$(cat <<EOF
+{
+  "name": "${POD_NAME}",
+  "imageName": "${IMAGE}",
+  "gpuTypeIds": ["${gpu}"],
+  "gpuCount": 1,
+  "containerDiskInGb": ${CONTAINER_DISK},
+  "volumeInGb": ${VOLUME_DISK},
+  "cloudType": "${cloud}"
+}
+EOF
+)
+            fi
 
-        response=$(curl -s -w "\n%{http_code}" \
-            -X POST "$API" \
-            -H "Authorization: Bearer ${RUNPOD_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "$body")
+            response=$(curl -s -w "\n%{http_code}" \
+                -X POST "$API" \
+                -H "Authorization: Bearer ${RUNPOD_API_KEY}" \
+                -H "Content-Type: application/json" \
+                -d "$body")
 
-        http_code=$(echo "$response" | tail -1)
-        resp_body=$(echo "$response" | sed '$d')
+            http_code=$(echo "$response" | tail -1)
+            resp_body=$(echo "$response" | sed '$d')
 
-        if [[ "$http_code" == "200" || "$http_code" == "201" ]]; then
-            pod_id=$(echo "$resp_body" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-            echo ""
-            echo "========================================="
-            echo " SUCCESS! Pod deployed."
-            echo " GPU:    ${gpu}"
-            echo " Pod ID: ${pod_id}"
-            echo " Body:   ${resp_body}"
-            echo "========================================="
+            if [[ "$http_code" == "200" || "$http_code" == "201" ]]; then
+                pod_id=$(echo "$resp_body" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+                echo ""
+                echo "========================================="
+                echo " SUCCESS! Pod deployed."
+                echo " GPU:    ${gpu}"
+                echo " Cloud:  ${cloud}"
+                echo " Pod ID: ${pod_id}"
+                echo " Body:   ${resp_body}"
+                echo "========================================="
 
-            # Optional: send a notification (uncomment as needed)
-            # curl -s -d "RunPod ${gpu} grabbed! Pod: ${pod_id}" ntfy.sh/YOUR_TOPIC
-            # osascript -e 'display notification "'"RunPod ${gpu} grabbed!"'" with title "RunPod"'
+                # Optional: send a notification (uncomment as needed)
+                # curl -s -d "RunPod ${gpu} grabbed! Pod: ${pod_id}" ntfy.sh/YOUR_TOPIC
+                # osascript -e 'display notification "'"RunPod ${gpu} grabbed!"'" with title "RunPod"'
 
-            exit 0
-        else
-            echo "  → ${http_code}: $(echo "$resp_body" | head -c 120)"
-        fi
+                exit 0
+            else
+                echo "  → ${http_code}: $(echo "$resp_body" | head -c 120)"
+            fi
+        done
     done
 
     echo "  Waiting ${POLL_INTERVAL}s before next attempt..."
