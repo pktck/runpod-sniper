@@ -1,4 +1,10 @@
-# runpod-sniper
+<p align="center">
+  <img src="assets/runpod-sniper-banner.svg" alt="runpod-sniper" width="900"/>
+</p>
+
+**TL;DR `runpod-sniper` is a bash script that attempts to deploy a RunPod GPU Pod until one is available.**
+
+## About
 
 Somtimes you need to spin up a [RunPod GPU Pod](https://www.runpod.io/product/cloud-gpus), but there aren't any of the type you need available. Dang!
 
