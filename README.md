@@ -2,7 +2,7 @@
   <img src="assets/runpod-sniper-banner.svg" alt="runpod-sniper" width="900"/>
 </p>
 
-**TL;DR `runpod-sniper` is a bash script that attempts to deploy a RunPod GPU Pod until one is available.**
+TL;DR `runpod-sniper` is a bash script that attempts to deploy a RunPod GPU Pod until one is available.
 
 ## About
 
