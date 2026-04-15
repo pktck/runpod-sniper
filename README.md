@@ -8,7 +8,7 @@ Well fear not! `runpod-sniper` is a bash script that attempts to deploy a RunPod
 
 ## Setup
 
-Copy the example preset and edit it with your API key and desired settings:
+Copy the example preset and edit it to include your API key and desired settings:
 
 ```bash
 cp configs/example.conf configs/my.conf
@@ -37,7 +37,7 @@ Upon successfully grabbing a Pod, the script will return RunPod's response body,
 
 ## Config fields
 
-All keys must be defined (the script errors on any undeclared key). Empty strings are allowed for optional values. See `[configs/example.conf](configs/example.conf)`:
+All keys must be defined (the script errors on any undeclared key). Empty strings are allowed for optional values. See [configs/example.conf](configs/example.conf):
 
 ```bash
 RUNPOD_API_KEY=""                   # get one at https://www.runpod.io/console/user/settings
@@ -72,4 +72,4 @@ The live portion briefly provisions a real (billed) pod for a few seconds before
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT - see [LICENSE](LICENSE)
