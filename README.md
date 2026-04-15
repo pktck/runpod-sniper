@@ -6,11 +6,11 @@ TL;DR `runpod-sniper` is a bash script that attempts to deploy a RunPod GPU Pod 
 
 ## About
 
-Somtimes you need to spin up a [RunPod GPU Pod](https://www.runpod.io/product/cloud-gpus), but there aren't any of the type you need available. Dang!
+Sometimes you need to spin up a [RunPod GPU Pod](https://www.runpod.io/product/cloud-gpus), but there aren't any of the type you need available. Dang!
 
 What if you need to generate some [images of cats](https://www.kaggle.com/datasets/mhassansaboor/ai-generated-cats-high-res-images-and-prompts) like, right now? Or how about if your [TPS report](https://en.wikipedia.org/wiki/TPS_report#Office_Space) is late and you've fine-tuned an open-weight LLM to generate it just the way the [pointy-haired boss](https://dilbert.fandom.com/wiki/Pointy-Haired_Boss) likes?
 
-Well fear not! `runpod-sniper` is a bash script that attempts to deploy a RunPod GPU Pod until one is available. It cycles through a prioritized list of GPU types on each attempt, and exits as soon as a pod is successfully created. It'll even send you a push notification using [nfty.sh](https://ntfy.sh/) and show a desktop notif ones it gets your Pod going so you can stop reading [HN](https://news.ycombinator.com/) and get back to work. It has no external dependencies, so you can run it [wherever](https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2F9ldzrbzra3bz.jpg).
+Well fear not! `runpod-sniper` is a bash script that attempts to deploy a RunPod GPU Pod until one is available. It cycles through a prioritized list of GPU types on each attempt, and exits as soon as a pod is successfully created. It'll even send you a push notification using [ntfy.sh](https://ntfy.sh/) and show a desktop notification once it gets your Pod going so you can stop reading [HN](https://news.ycombinator.com/) and get back to work. It has no external dependencies, so you can run it [wherever](https://www.reddit.com/media?url=https%3A%2F%2Fi.redd.it%2F9ldzrbzra3bz.jpg).
 
 ## Setup
 
