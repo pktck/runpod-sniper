@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# runpod-sniper presets
+configs/*.conf
+!configs/example.conf
+
+# Claude Code
+.claude/
