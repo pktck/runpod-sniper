@@ -180,6 +180,23 @@ assert "pretty_json indents \"id\" two spaces" "[[ \"\$pretty_out\" == *'  \"id\
 assert "pretty_json expands nested object on its own lines" "[[ \"\$pretty_out\" == *'    \"x\": 1'* ]]"
 assert "pretty_json expands array elements onto separate lines" "[[ \"\$pretty_out\" == *'    8888,'* ]]"
 
+echo "Test 6e: POLL_INTERVAL below 10 triggers minimum-clamp warning"
+write_config "clamp-low"
+sed -i.bak 's/^POLL_INTERVAL=.*/POLL_INTERVAL=3/' "${CONFIGS_DIR}/${TEST_PREFIX}clamp-low.conf" && rm -f "${CONFIGS_DIR}/${TEST_PREFIX}clamp-low.conf.bak"
+export CURL_RESPONSE_BODY='{"id":"pod-xyz"}'
+export CURL_RESPONSE_CODE=200
+unset CURL_BODY_LOG
+err="$(PATH="${FAKE_BIN}:${PATH}" "$SCRIPT" "${CONFIGS_DIR}/${TEST_PREFIX}clamp-low.conf" 2>&1 >/dev/null < /dev/null)"; rc=$?
+assert "exits 0 (happy path still completes)" "[[ $rc -eq 0 ]]"
+assert "stderr contains clamp warning" "[[ \"\$err\" == *'POLL_INTERVAL=3'*'minimum'* ]]"
+
+echo "Test 6f: POLL_INTERVAL >= 10 does NOT warn"
+write_config "clamp-ok"
+sed -i.bak 's/^POLL_INTERVAL=.*/POLL_INTERVAL=30/' "${CONFIGS_DIR}/${TEST_PREFIX}clamp-ok.conf" && rm -f "${CONFIGS_DIR}/${TEST_PREFIX}clamp-ok.conf.bak"
+err="$(PATH="${FAKE_BIN}:${PATH}" "$SCRIPT" "${CONFIGS_DIR}/${TEST_PREFIX}clamp-ok.conf" 2>&1 >/dev/null < /dev/null)"; rc=$?
+assert "exits 0" "[[ $rc -eq 0 ]]"
+assert "stderr does NOT mention minimum clamp" "[[ \"\$err\" != *'minimum'* ]]"
+
 unset CURL_BODY_LOG
 
 echo "Test 7: capacity error (400 'no longer any instances') loops to retry"
