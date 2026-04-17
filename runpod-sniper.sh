@@ -51,6 +51,12 @@ if (( ${#missing[@]} > 0 )); then
     exit 1
 fi
 
+MIN_POLL_INTERVAL=10
+if (( POLL_INTERVAL < MIN_POLL_INTERVAL )); then
+    echo "Warning: POLL_INTERVAL=${POLL_INTERVAL} is below the minimum of ${MIN_POLL_INTERVAL}s; using ${MIN_POLL_INTERVAL}s." >&2
+    POLL_INTERVAL=$MIN_POLL_INTERVAL
+fi
+
 if [[ -z "$RUNPOD_API_KEY" ]]; then
     if [[ -t 0 ]]; then
         printf 'RUNPOD_API_KEY: '
