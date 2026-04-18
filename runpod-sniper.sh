@@ -387,6 +387,7 @@ main() {
   if [[ -z "$config_path" ]]; then
     usage
   fi
+  echo running with $config_path
 
   load_config "$config_path"
 
