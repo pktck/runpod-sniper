@@ -40,7 +40,7 @@ config_path() {
 }
 
 # Removes the temp dir and any test-prefixed config files.
-# shellcheck disable=SC2329  # invoked via trap
+# shellcheck disable=SC2317,SC2329  # invoked via trap
 cleanup() {
   rm -rf "$TMP_DIR"
   rm -f "${CONFIGS_DIR}/${TEST_PREFIX}"*.conf
@@ -155,7 +155,7 @@ run_sniper_bg() {
 # runs the normal cleanup.
 # Globals (read):
 #   created_pod_id, API_BASE, AUTH, POD_ID_FILE
-# shellcheck disable=SC2329  # invoked via trap
+# shellcheck disable=SC2317,SC2329  # invoked via trap
 live_cleanup() {
   if [[ -n "$created_pod_id" ]]; then
     echo "Cleanup: deleting pod ${created_pod_id}"
